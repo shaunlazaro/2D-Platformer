@@ -7,6 +7,10 @@ public class ParticleController : MonoBehaviour {
     public GameObject deathParticle;
     public GameObject respawnParticle;
     public GameObject jumpParticle;
+    public GameObject bulletHitParticle;
+    public GameObject bulletExplodeParticle;
+    
+    public GameObject dashFinishParticle;
 
     public void DeathParticleRelease(GameObject deadObject, bool isEnemy)
     {
@@ -49,5 +53,21 @@ public class ParticleController : MonoBehaviour {
     public void JumpParticleRelease(PlayerController player)
     {
         Instantiate(jumpParticle, player.transform.position, jumpParticle.transform.rotation);
+    }
+
+    public void BulletHitParticleRelease(GameObject thingHit)
+    {
+        Instantiate(bulletHitParticle, thingHit.transform.position, bulletHitParticle.transform.rotation);
+    }
+
+    public void BulletExplodeParticleRelease(GameObject thingHit)
+    {
+        Instantiate(bulletExplodeParticle, thingHit.transform.position, bulletExplodeParticle.transform.rotation);
+    }
+
+
+    public void DashParticleRelease (Vector3 endingPosition)
+    {
+        Instantiate(dashFinishParticle, endingPosition, dashFinishParticle.transform.rotation);
     }
 }

@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class Bullet : MonoBehaviour {
 
+    private bool isColliding = false;
+
     // Allows user to aim and select starting point.
     public void Fire(Vector2 startingPoint, Vector2 destination, float speed)
     {
@@ -21,10 +23,26 @@ public class Bullet : MonoBehaviour {
     public void Fire(float speed)
     {
         this.GetComponent<Rigidbody2D>().velocity = new Vector2(speed, 0);
+        
     }
 
     void OnBecameInvisible()
     {
-        DestroyObject(gameObject);
+        DestroyObject(gameObject, gameObject.GetComponent<TrailRenderer>().time);
+    }
+
+    void OnTriggerEnter2D(Collider2D thingHit)
+    {
+        if (isColliding) return;
+        isColliding = true;
+
+        if (thingHit.tag != "Pass Through")
+        {
+            this.GetComponent<Rigidbody2D>().velocity = new Vector2(0, 0);
+            DestroyObject(gameObject, gameObject.GetComponent<TrailRenderer>().time);
+            GameObject.FindGameObjectWithTag("Level Manager").GetComponent<ParticleController>().BulletHitParticleRelease(gameObject);
+        }
+        else
+            isColliding = false;
     }
 }

@@ -17,6 +17,10 @@ public class PlayerController : MonoBehaviour {
     public GameObject aimerDirectionPoint;
     private float aimerAngle;
     private bool aiming;
+    private bool dashing;
+
+    public GameObject slashWave;
+    public float slashWaveSpeed;
 
     private bool grounded;
     private bool doubleJumped;
@@ -32,22 +36,12 @@ public class PlayerController : MonoBehaviour {
 	
     void FixedUpdate()
     {
+        // Checks if the player is grounded by looking at a circle collider under the player.
         grounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
     }
 
     // Update is called once per frame
     void Update() {
-
-        #region JumpAndMovement
-
-        // Jumps when jump button is pressed.
-        if (Input.GetButtonDown("Jump")) Jump();
-
-        // Moves in axis direction and stops when nothing is pressed.
-        if (Input.GetAxisRaw("Horizontal") > 0) MovePlayer(1);
-        else if ((Input.GetAxisRaw("Horizontal") < 0)) MovePlayer(-1);
-        else MovePlayer(0);
-        #endregion
 
         #region Aiming
 
@@ -65,34 +59,51 @@ public class PlayerController : MonoBehaviour {
             bulletAimer.transform.eulerAngles = new Vector3(0, 90, 0);
         #endregion
 
-        #region Attacks
+        // Features:
+        // - Moves based on input
+        // - Jumps when jump button is pressed
+        // - Dashes when dash button is pressed
+        #region JumpAndMovementInput
 
-        // For shooting and aiming the bullet attack.
-        if (Input.GetButtonDown("FireBullet")) FireBullet();
-        /*
-        bulletAimer.transform.RotateAround(transform.position,
-            new Vector3(0, 0, Input.GetAxis("VerticalRight")),
-            aimerRotationSpeed * Time.deltaTime);
-            */
+        // Jumps when jump button is pressed.
+        if (Input.GetButtonDown("Jump")) Jump();
+        // Dashes when dash is pressed, tells dash method if aiming or not.
+        if (Input.GetButtonDown("Dash")) Dash();
 
+        // Moves in axis direction and stops when nothing is pressed.
+        else if (Input.GetAxisRaw("Horizontal") > 0 && !dashing) MovePlayer(1);
+        else if (Input.GetAxisRaw("Horizontal") < 0 && !dashing) MovePlayer(-1);
+        else if (!dashing) MovePlayer(0);
 
-        if (Input.GetButtonDown("FireSlash")) SwordAttack();
         #endregion
 
-        #region Animator
+
+        #region Attacks
+        // For shooting and aiming the bullet attack.
+        if (Input.GetButtonDown("FireBullet")) FireBullet();
+        #endregion
+
+        #region 
+
+        // Sets speed (for movement animation)
         anim.SetFloat("Speed", Mathf.Abs(GetComponent<Rigidbody2D>().velocity.x));
+        
+        // Tells animator if guy is on ground.
         anim.SetBool("Grounded", grounded);
 
+        // Flips player if he is moving backwards (helpful for shooting).
         if (GetComponent<Rigidbody2D>().velocity.x > 0)
             transform.localScale = new Vector3(1f, 1f, 1f);
         else if (GetComponent<Rigidbody2D>().velocity.x < 0)
             transform.localScale = new Vector3(-1f, 1f, 1f);
         #endregion
-
         
     }
 
+    // Stores the functions triggered by "JumpAndMovement"
     #region MovementFunctions
+
+    // Jump + Double Jump
     void Jump()
     {
         if (grounded)
@@ -112,16 +123,43 @@ public class PlayerController : MonoBehaviour {
         particle.JumpParticleRelease(this);
     }
 
+    // Move player forward/back depending on direction passed.
+    // Takes inputs of -1, 0, and 1 usually.
     void MovePlayer(int direction)
     {
         GetComponent<Rigidbody2D>().velocity = new Vector2(moveSpeed*direction, GetComponent<Rigidbody2D>().velocity.y);
     }
+
+    // More like a backstep, dashes away from aimer or backwards.
+    void Dash()
+    {
+        if (!dashing)
+        {
+            dashing = true;
+            GetComponent<Rigidbody2D>().velocity = new Vector2(moveSpeed * 1.5f * transform.localScale.x, 0);
+            GetComponent<Rigidbody2D>().gravityScale = 0;
+            StartCoroutine(StopDash());
+        }
+        else
+        {
+            StartCoroutine(StopDash(0f));
+        }         
+    }
+
+    IEnumerator StopDash(float stopTime = 0.5f)
+    {
+        yield return new WaitForSeconds(stopTime); // Lets you control how long dash lasts.
+        if (!dashing) yield break; // If dash was cancelled already, don't redo the function when the dash would naturally end.
+        GetComponent<Rigidbody2D>().velocity = new Vector2(0, 0);
+        yield return new WaitForSeconds(stopTime / 5); // If stoptime is 0.5, becomes 0.1 secs.  If 0, then no wait.
+        GetComponent<Rigidbody2D>().gravityScale = 3;
+        particle.DashParticleRelease(this.transform.position);
+        dashing = false;
+        doubleJumped = false;
+    }
     #endregion
 
     #region Attacks
-    void SwordAttack()
-    {
-    }
 
     void FireBullet()
     {
@@ -130,7 +168,6 @@ public class PlayerController : MonoBehaviour {
             (this.transform.position.x, this.transform.position.y, this.transform.position.z),
             this.transform.rotation) as GameObject;
         Physics2D.IgnoreCollision(projectile.GetComponent<Collider2D>(), this.GetComponent<Collider2D>());
-
 
         if (!aiming)
             projectile.GetComponent<Bullet>().Fire(bulletSpeed * transform.localScale.x);

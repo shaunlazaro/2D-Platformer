@@ -9,11 +9,11 @@ public class DestroyFinishedParticle : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         thisParticleSystem = GetComponent<ParticleSystem>();
-	}
-	
+    }
+
 	// Update is called once per frame
 	void Update () {
         if (!thisParticleSystem.isPlaying)
             Destroy(gameObject);
-	}
+    }
 }
