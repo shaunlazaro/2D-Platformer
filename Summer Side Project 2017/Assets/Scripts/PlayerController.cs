@@ -7,10 +7,12 @@ public class PlayerController : MonoBehaviour {
     public float jumpHeight;
     public float moveSpeed;
 
+    // Used to check if the player is on the ground.
     public Transform groundCheck;
     public float groundCheckRadius;
     public LayerMask groundLayer;
 
+    // Used for shooting+aiming.
     public GameObject bullet;
     public float bulletSpeed;
     public GameObject bulletAimer;
@@ -18,22 +20,27 @@ public class PlayerController : MonoBehaviour {
     private float aimerAngle;
     private bool aiming;
     private bool dashing;
-
-    public GameObject slashWave;
-    public float slashWaveSpeed;
-
+    
     private bool grounded;
     private bool doubleJumped;
 
     private Animator anim;
     private ParticleController particle;
 
-	// Use this for initialization
+    private PlayerStatsManager save;
+
 	void Start () {
+        // Initiate the animator.
         anim = GetComponent<Animator>();
+
+        // Initiate the particle effect controller.
         particle = FindObjectOfType<ParticleController>();
-	}
+
+        // Initiate the Save Manager.
+        save = GameObject.FindGameObjectWithTag("Level Manager").GetComponent<PlayerStatsManager>();
+    }
 	
+    // FixedUpdate is called on a different interval than Update; it's used for physics.
     void FixedUpdate()
     {
         // Checks if the player is grounded by looking at a circle collider under the player.
@@ -43,6 +50,9 @@ public class PlayerController : MonoBehaviour {
     // Update is called once per frame
     void Update() {
 
+        // Features:
+        // - Makes the aimer visible when right stick is in use.
+        // - Rotates the aimer to point in same direction as stick.
         #region Aiming
 
         bulletAimer.transform.position = this.transform.position;
@@ -77,13 +87,15 @@ public class PlayerController : MonoBehaviour {
 
         #endregion
 
-
+        // Features:
+        // - Shooting
         #region Attacks
         // For shooting and aiming the bullet attack.
         if (Input.GetButtonDown("FireBullet")) FireBullet();
         #endregion
 
-        #region 
+        // Prob have to redo this when I add animations.
+        #region Animator Code
 
         // Sets speed (for movement animation)
         anim.SetFloat("Speed", Mathf.Abs(GetComponent<Rigidbody2D>().velocity.x));
@@ -159,6 +171,7 @@ public class PlayerController : MonoBehaviour {
     }
     #endregion
 
+    // Stores the shooting functions.
     #region Attacks
 
     void FireBullet()
