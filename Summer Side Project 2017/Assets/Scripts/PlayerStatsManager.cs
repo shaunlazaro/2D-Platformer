@@ -12,10 +12,11 @@ public class PlayerStatsManager : MonoBehaviour {
     public int batteryCharge; // It might be implemented, still considering.
     */
 
+    // Jumps refers to air jumps.
     private int maxJumps;
     public int MaxJumps
     {
-        get { return MaxJumps; }
+        get { return maxJumps; }
         set { maxJumps = value; }
     }
     private string maxJumpsKey = "maxJumps";
@@ -23,7 +24,7 @@ public class PlayerStatsManager : MonoBehaviour {
     private int maxDashes;
     public int MaxDashes
     {
-        get { return MaxDashes; }
+        get { return maxDashes; }
         set { maxDashes = value; }
     }
     private string maxDashesKey = "maxDashes";
@@ -31,8 +32,8 @@ public class PlayerStatsManager : MonoBehaviour {
     #endregion
 
     #region Default Values
-    private int maxJumpsDefault = 2;
-    private int maxDashesDefault = 2;
+    private int maxJumpsDefault = 1;
+    private int maxDashesDefault = 1;
     #endregion
 
 
