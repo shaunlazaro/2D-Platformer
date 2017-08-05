@@ -1,15 +1,9 @@
 # Unity
-<<<<<<< HEAD
 Summer\ Side\ Project\ 2017/Library/
 Summer\ Side\ Project\ 2017/Temp/
 Summer\ Side\ Project\ 2017/obj/
 Summer\ Side\ Project\ 2017/Output/
-=======
-Summer\ Side\ Project 2017/Library/
-Summer\ Side\ Project 2017/Temp/
-Summer\ Side\ Project 2017/obj/
-Summer\ Side\ Project 2017/Output/
->>>>>>> master
+
 *.csproj
 *.unityproj
 *.sln
