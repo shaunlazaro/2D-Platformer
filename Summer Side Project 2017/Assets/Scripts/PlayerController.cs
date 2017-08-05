@@ -22,12 +22,15 @@ public class PlayerController : MonoBehaviour {
     private bool dashing;
     
     private bool grounded;
-    private bool doubleJumped;
+    private int airJumpsLeft;
+    private int airDashesLeft;
 
     private Animator anim;
     private ParticleController particle;
 
     private PlayerStatsManager save;
+
+    private LevelUIController ui;
 
 	void Start () {
         // Initiate the animator.
@@ -38,13 +41,25 @@ public class PlayerController : MonoBehaviour {
 
         // Initiate the Save Manager.
         save = GameObject.FindGameObjectWithTag("Level Manager").GetComponent<PlayerStatsManager>();
+
+        //
+        ui = GameObject.FindGameObjectWithTag("Level Manager").GetComponent<LevelUIController>();
     }
-	
+
     // FixedUpdate is called on a different interval than Update; it's used for physics.
     void FixedUpdate()
     {
         // Checks if the player is grounded by looking at a circle collider under the player.
-        grounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
+        if (Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer))
+        {
+            grounded = true;
+            airJumpsLeft = save.MaxJumps;
+            airDashesLeft = save.MaxDashes;
+        }
+        else
+        {
+            grounded = false;
+        }
     }
 
     // Update is called once per frame
@@ -109,22 +124,28 @@ public class PlayerController : MonoBehaviour {
         else if (GetComponent<Rigidbody2D>().velocity.x < 0)
             transform.localScale = new Vector3(-1f, 1f, 1f);
         #endregion
-        
+
+        #region UI
+
+        if (ui.airDashNum != airDashesLeft) ui.UpdateDashText(airDashesLeft);
+        if (ui.airJumpNum != airJumpsLeft) ui.UpdateJumpText(airJumpsLeft);
+
+        #endregion
     }
 
     // Stores the functions triggered by "JumpAndMovement"
     #region MovementFunctions
 
-    // Jump + Double Jump
+    // Jumping while not grounded reduces "jumps left"
     void Jump()
     {
         if (grounded)
         {
-            doubleJumped = false;
+
         }
-        else if (!doubleJumped)
+        else if (airJumpsLeft > 0 && !grounded)
         {
-            doubleJumped = true;
+            airJumpsLeft--;
         }
         else
         {
@@ -147,19 +168,24 @@ public class PlayerController : MonoBehaviour {
     {
         if (!dashing)
         {
+            // Handles # Of Air Dashes Allowed.
+            if(!grounded)
+            {
+                if (airDashesLeft < 1) return;
+                else airDashesLeft--;
+            }
+
+            // Dashes
             dashing = true;
             GetComponent<Rigidbody2D>().velocity = new Vector2(moveSpeed * 1.5f * transform.localScale.x, 0);
             GetComponent<Rigidbody2D>().gravityScale = 0;
             StartCoroutine(StopDash());
         }
-        else
-        {
-            StartCoroutine(StopDash(0f));
-        }         
     }
 
     IEnumerator StopDash(float stopTime = 0.5f)
     {
+        if (!grounded) airJumpsLeft++;
         yield return new WaitForSeconds(stopTime); // Lets you control how long dash lasts.
         if (!dashing) yield break; // If dash was cancelled already, don't redo the function when the dash would naturally end.
         GetComponent<Rigidbody2D>().velocity = new Vector2(0, 0);
@@ -167,7 +193,6 @@ public class PlayerController : MonoBehaviour {
         GetComponent<Rigidbody2D>().gravityScale = 3;
         particle.DashParticleRelease(this.transform.position);
         dashing = false;
-        doubleJumped = false;
     }
     #endregion
 
