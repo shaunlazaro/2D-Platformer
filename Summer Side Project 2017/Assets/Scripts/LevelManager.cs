@@ -18,7 +18,7 @@ public class LevelManager : MonoBehaviour {
 	
     public IEnumerator RespawnPlayer()
     {
-        particle.DeathParticleRelease(player);
+        particle.DeathParticleRelease(player.gameObject);
         player.enabled = false;
         player.GetComponent<Renderer>().enabled = false;
         player.GetComponent<Rigidbody2D>().velocity = new Vector2(0, 0);

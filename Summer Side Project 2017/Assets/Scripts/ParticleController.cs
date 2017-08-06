@@ -12,17 +12,15 @@ public class ParticleController : MonoBehaviour {
     
     public GameObject dashFinishParticle;
 
-    public void DeathParticleRelease(GameObject deadObject, bool isEnemy)
+    public void DeathParticleRelease(GameObject deadObject, bool isEnemy = false)
     {
         //  TODO:
         //  - Do particle effects for dead NPC.
         //  - Do particle effects for dead enemy.
         //
+
+        // For now, the deathparticle for players and enemies will be the same.
         Instantiate(deathParticle, deadObject.transform.position, deathParticle.transform.rotation);
-    }
-    public void DeathParticleRelease(PlayerController deadPlayer)
-    {
-        Instantiate(deathParticle, deadPlayer.transform.position, deathParticle.transform.rotation);
     }
 
     //Used as a spawn animation for NPCs.
@@ -64,7 +62,6 @@ public class ParticleController : MonoBehaviour {
     {
         Instantiate(bulletExplodeParticle, thingHit.transform.position, bulletExplodeParticle.transform.rotation);
     }
-
 
     public void DashParticleRelease (Vector3 endingPosition)
     {

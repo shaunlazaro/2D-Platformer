@@ -5,6 +5,7 @@ using UnityEngine;
 public class DeathTouchHazard : MonoBehaviour {
 
     public LevelManager level;
+    public bool hazardous = true;
 
 	// Use this for initialization
 	void Start () {
@@ -18,7 +19,7 @@ public class DeathTouchHazard : MonoBehaviour {
 
     void OnTriggerEnter2D(Collider2D collided)
     {
-        if (collided.name == "Player")
+        if (collided.name == "Player" && hazardous)
         {
             HitSpikes();
         }

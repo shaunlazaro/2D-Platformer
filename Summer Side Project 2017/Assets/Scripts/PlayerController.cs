@@ -40,10 +40,10 @@ public class PlayerController : MonoBehaviour {
         particle = FindObjectOfType<ParticleController>();
 
         // Initiate the Save Manager.
-        save = GameObject.FindGameObjectWithTag("Level Manager").GetComponent<PlayerStatsManager>();
+        save = FindObjectOfType<PlayerStatsManager>();
 
         //
-        ui = GameObject.FindGameObjectWithTag("Level Manager").GetComponent<LevelUIController>();
+        ui = FindObjectOfType<LevelUIController>();
     }
 
     // FixedUpdate is called on a different interval than Update; it's used for physics.

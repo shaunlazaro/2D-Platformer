@@ -5,6 +5,12 @@ using UnityEngine;
 public class Bullet : MonoBehaviour {
 
     private bool isColliding = false;
+    public int bulletDamage;
+
+    void Start()
+    {
+        bulletDamage = FindObjectOfType<PlayerStatsManager>().BulletDamage;
+    }
 
     // Allows user to aim and select starting point.
     public void Fire(Vector2 startingPoint, Vector2 destination, float speed)
@@ -23,7 +29,6 @@ public class Bullet : MonoBehaviour {
     public void Fire(float speed)
     {
         this.GetComponent<Rigidbody2D>().velocity = new Vector2(speed, 0);
-        
     }
 
     void OnBecameInvisible()
@@ -35,6 +40,11 @@ public class Bullet : MonoBehaviour {
     {
         if (isColliding) return;
         isColliding = true;
+        
+        if(thingHit.tag == "Enemy")
+        {
+            thingHit.gameObject.GetComponent<Enemy>().GetHit(bulletDamage);
+        }
 
         if (thingHit.tag != "Pass Through")
         {

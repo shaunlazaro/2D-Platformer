@@ -12,6 +12,14 @@ public class PlayerStatsManager : MonoBehaviour {
     public int batteryCharge; // It might be implemented, still considering.
     */
 
+    private int bulletDamage;
+    public int BulletDamage
+    {
+        get { return bulletDamage; }
+        set { bulletDamage = value; }
+    }
+    private string bulletDamageKey = "bulletDamage";
+
     // Jumps refers to air jumps.
     private int maxJumps;
     public int MaxJumps
@@ -34,6 +42,7 @@ public class PlayerStatsManager : MonoBehaviour {
     #region Default Values
     private int maxJumpsDefault = 1;
     private int maxDashesDefault = 1;
+    private int bulletDamageDefault = 1;
     #endregion
 
 
@@ -48,11 +57,13 @@ public class PlayerStatsManager : MonoBehaviour {
         //If there are no values, set to default.
         if (!PlayerPrefs.HasKey(maxJumpsKey)) PlayerPrefs.SetInt(maxJumpsKey, maxJumpsDefault);
         if (!PlayerPrefs.HasKey(maxDashesKey)) PlayerPrefs.SetInt(maxDashesKey, maxDashesDefault);
+        if (!PlayerPrefs.HasKey(bulletDamageKey)) PlayerPrefs.SetInt(bulletDamageKey, bulletDamageDefault);
     }
 
     public void LoadSave()
     {
-        maxJumps = PlayerPrefs.GetInt("maxJumps");
-        maxDashes = PlayerPrefs.GetInt("maxDashes");
+        maxJumps = PlayerPrefs.GetInt(maxJumpsKey);
+        maxDashes = PlayerPrefs.GetInt(maxDashesKey);
+        bulletDamage = PlayerPrefs.GetInt(bulletDamageKey);
     }
 }
