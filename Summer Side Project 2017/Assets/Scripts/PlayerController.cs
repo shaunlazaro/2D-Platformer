@@ -6,6 +6,7 @@ public class PlayerController : MonoBehaviour {
 
     public float jumpHeight;
     public float moveSpeed;
+    private float dashSpeedMultiplier = 1.5f; // How much moveSpeed is multiplied by during the dash.
 
     // Used to check if the player is on the ground.
     public Transform groundCheck;
@@ -141,7 +142,7 @@ public class PlayerController : MonoBehaviour {
     {
         if (grounded)
         {
-
+            // Do nothing.
         }
         else if (airJumpsLeft > 0 && !grounded)
         {
@@ -177,22 +178,30 @@ public class PlayerController : MonoBehaviour {
 
             // Dashes
             dashing = true;
-            GetComponent<Rigidbody2D>().velocity = new Vector2(moveSpeed * 1.5f * transform.localScale.x, 0);
-            GetComponent<Rigidbody2D>().gravityScale = 0;
-            StartCoroutine(StopDash());
+            StartCoroutine(HandleDash());
         }
     }
 
-    IEnumerator StopDash(float stopTime = 0.5f)
+    IEnumerator HandleDash(float dashTime = 0.5f)
     {
         if (!grounded) airJumpsLeft++;
-        yield return new WaitForSeconds(stopTime); // Lets you control how long dash lasts.
         if (!dashing) yield break; // If dash was cancelled already, don't redo the function when the dash would naturally end.
+
+        // Set the and remove gravity before waiting the full dash duration.
+        GetComponent<Rigidbody2D>().velocity = new Vector2(moveSpeed * dashSpeedMultiplier * transform.localScale.x, 0);
+        GetComponent<Rigidbody2D>().gravityScale = 0;
+        yield return new WaitForSeconds(dashTime); // Lets you control how long dash lasts.
+
+        // Stop all of the velocity then wait, suspending the player in the air for a fifth of the dashTime.
         GetComponent<Rigidbody2D>().velocity = new Vector2(0, 0);
-        yield return new WaitForSeconds(stopTime / 5); // If stoptime is 0.5, becomes 0.1 secs.  If 0, then no wait.
+        yield return new WaitForSeconds(dashTime / 5); // If stoptime is 0.5, becomes 0.1 secs.  If 0, then no wait.
+
+        // After being suspended, the player regains control and gravity returns.
         GetComponent<Rigidbody2D>().gravityScale = 3;
-        particle.DashParticleRelease(this.transform.position);
         dashing = false;
+
+        // Release particles to make exiting the dash more impactful.
+        particle.DashParticleRelease(this.transform.position);
     }
     #endregion
 

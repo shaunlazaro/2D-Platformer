@@ -13,16 +13,16 @@ public class Bullet : MonoBehaviour {
     }
 
     // Allows user to aim and select starting point.
-    public void Fire(Vector2 startingPoint, Vector2 destination, float speed)
+    public void Fire(Vector2 startingPoint, Vector2 destination, float desiredMagnitude)
     {
-        float distanceToX = destination.x - startingPoint.x;
-        float distanceToY = destination.y - startingPoint.y;
-        float totalDistance = Mathf.Abs(distanceToX) + Mathf.Abs(distanceToY);
+        float xLength = destination.x - startingPoint.x;
+        float yLength = destination.y - startingPoint.y;
+        float currentMagnitude = Mathf.Sqrt(xLength * xLength + yLength * yLength);
 
-        float xPercent = distanceToX / totalDistance;
-        float yPercent = distanceToY / totalDistance;
+        xLength = xLength / currentMagnitude * desiredMagnitude;
+        yLength = yLength / currentMagnitude * desiredMagnitude;
 
-        this.GetComponent<Rigidbody2D>().velocity = new Vector2(speed * xPercent, speed * yPercent);
+        this.GetComponent<Rigidbody2D>().velocity = new Vector2(xLength,yLength);
     }
 
     // Moves in a straight line from spawn.
@@ -38,7 +38,8 @@ public class Bullet : MonoBehaviour {
 
     void OnTriggerEnter2D(Collider2D thingHit)
     {
-        if (isColliding) return;
+        // Exits if the bullet already hit something or passes through another bullet.
+        if (isColliding || thingHit.gameObject.GetComponent<Bullet>() != null) return;
         isColliding = true;
         
         if(thingHit.tag == "Enemy")
