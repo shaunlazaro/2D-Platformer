@@ -6,34 +6,53 @@ public class LevelUIController : MonoBehaviour {
 
     public GameObject airJump;
     public GameObject airDash;
+    public GameObject shotCooldown;
 
-    private Text airJumpText;
-    private Text airDashText;
+    private int airJumpNum = 0;
+    public int AirJumpNum
+    {
+        get { return airJumpNum; }
+    }
 
-    public int airJumpNum = 0;
-    public int airDashNum = 0;
+    private int airDashNum = 0;
+    public int AirDashNum
+    {
+        get { return airDashNum;  }
+    }
 
-	// Use this for initialization
-	void Start () {
-        airJumpText = airJump.GetComponent<Text>();
-        airDashText = airDash.GetComponent<Text>();
-	}
-
+    private int shotCooldownNum = 0;
+    public int ShotCooldownNum
+    {
+        get { return shotCooldownNum;  }
+    }
 
     public void UpdateJumpText(int newValue)
     {
-        MasterUpdateText(airJumpText,
+        MasterUpdateText(airJump,
             "Air Jumps Left: " + newValue);
         airJumpNum = newValue;
     }
     public void UpdateDashText(int newValue)
     {
-        MasterUpdateText(airDashText,
+        MasterUpdateText(airDash,
             "Air Dashes Left: " + newValue);
         airDashNum = newValue;
     }
-    private void MasterUpdateText(Text textUpdated, string message )
+    public void UpdateShotCooldownText(int newValue)
     {
-        textUpdated.text = message;
+        string textInput; // What will be placed into the textbox.
+        if (newValue == 0)
+            textInput = "Ready";
+        else
+            textInput = newValue + " seconds";
+
+        MasterUpdateText(shotCooldown,
+            "Gun: " + textInput);
+        shotCooldownNum = newValue;
+    }
+
+    private void MasterUpdateText(GameObject textUpdated, string message )
+    {
+        textUpdated.GetComponent<Text>().text = message;
     }
 }

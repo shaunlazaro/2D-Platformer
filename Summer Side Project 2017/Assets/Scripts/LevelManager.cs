@@ -22,6 +22,7 @@ public class LevelManager : MonoBehaviour {
         player.enabled = false;
         player.GetComponent<Renderer>().enabled = false;
         player.GetComponent<Rigidbody2D>().velocity = new Vector2(0, 0);
+        player.ResetShootingCooldown();
         yield return new WaitForSeconds(delayBeforeRespawn);
         player.enabled = true;
         player.GetComponent<Renderer>().enabled = true;

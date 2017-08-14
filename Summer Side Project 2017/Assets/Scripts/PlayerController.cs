@@ -19,6 +19,10 @@ public class PlayerController : MonoBehaviour {
     public GameObject bulletAimer;
     public GameObject aimerDirectionPoint;
     private float aimerAngle;
+    public float shootingCooldownLength; // In Seconds.
+    private float shootingCooldownTime;
+    private int shootingCooldownLeft;
+
     private bool aiming;
     private bool dashing;
     
@@ -43,8 +47,9 @@ public class PlayerController : MonoBehaviour {
         // Initiate the Save Manager.
         save = FindObjectOfType<PlayerStatsManager>();
 
-        //
+        // Initiate the UI Controller.
         ui = FindObjectOfType<LevelUIController>();
+
     }
 
     // FixedUpdate is called on a different interval than Update; it's used for physics.
@@ -128,8 +133,12 @@ public class PlayerController : MonoBehaviour {
 
         #region UI
 
-        if (ui.airDashNum != airDashesLeft) ui.UpdateDashText(airDashesLeft);
-        if (ui.airJumpNum != airJumpsLeft) ui.UpdateJumpText(airJumpsLeft);
+        if (ui.AirDashNum != airDashesLeft) ui.UpdateDashText(airDashesLeft);
+        if (ui.AirJumpNum != airJumpsLeft) ui.UpdateJumpText(airJumpsLeft);
+
+        shootingCooldownLeft = Mathf.CeilToInt(shootingCooldownTime - Time.time);
+        if (shootingCooldownLeft < 0) shootingCooldownLeft = 0;
+        if (ui.ShotCooldownNum != shootingCooldownLeft) ui.UpdateShotCooldownText(shootingCooldownLeft);
 
         #endregion
     }
@@ -210,6 +219,9 @@ public class PlayerController : MonoBehaviour {
 
     void FireBullet()
     {
+        if (shootingCooldownTime > Time.time) return;
+        shootingCooldownTime = Time.time + shootingCooldownLength;
+
         GameObject projectile;
         projectile = Instantiate(bullet, new Vector3
             (this.transform.position.x, this.transform.position.y, this.transform.position.z),
@@ -222,6 +234,10 @@ public class PlayerController : MonoBehaviour {
         else
             projectile.GetComponent<Bullet>().Fire((Vector2)projectile.transform.position, 
                 (Vector2)aimerDirectionPoint.transform.position, bulletSpeed);
+    }
+    public void ResetShootingCooldown()
+    {
+        shootingCooldownTime = Time.time;
     }
     #endregion
 }
