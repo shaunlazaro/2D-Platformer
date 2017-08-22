@@ -24,6 +24,14 @@ public class PlayerController : MonoBehaviour {
     private int shootingCooldownLeft;
 
     private bool aiming;
+    private bool chargingSword;
+    private float swordChargeStartTime;
+    public GameObject swordChargeStageZeroParticles;
+    const float stageOneSwordChargeTime = 3;
+    public GameObject swordChargeStageOneParticles;
+    const float stageTwoSwordChargeTime = 6;
+    public GameObject swordChargeStageTwoParticles;
+
     private bool dashing;
     
     private bool grounded;
@@ -75,19 +83,26 @@ public class PlayerController : MonoBehaviour {
         // - Makes the aimer visible when right stick is in use.
         // - Rotates the aimer to point in same direction as stick.
         #region Aiming
-
         bulletAimer.transform.position = this.transform.position;
-        Vector3 direction = new Vector3(Input.GetAxis("HorizontalRight"), Input.GetAxis("VerticalRight"), 0);
-
-        aiming = !(direction.x == 0 && direction.y == 0);
-
-        if (aiming)
+        if (!chargingSword)
         {
-            aimerAngle = Mathf.Atan2(direction.y, direction.x) * 180 / Mathf.PI;
-            bulletAimer.transform.eulerAngles = new Vector3(0, 0, aimerAngle);
+            Vector3 direction = new Vector3(Input.GetAxis("HorizontalRight"), Input.GetAxis("VerticalRight"), 0);
+
+            aiming = !(direction.x == 0 && direction.y == 0);
+
+            if (aiming)
+            {
+                aimerAngle = Mathf.Atan2(direction.y, direction.x) * 180 / Mathf.PI;
+                bulletAimer.transform.eulerAngles = new Vector3(0, 0, aimerAngle);
+            }
+            else
+                bulletAimer.transform.eulerAngles = new Vector3(0, 90, 0);
         }
         else
+        {
+            aiming = false;
             bulletAimer.transform.eulerAngles = new Vector3(0, 90, 0);
+        }
         #endregion
 
         // Features:
@@ -110,9 +125,24 @@ public class PlayerController : MonoBehaviour {
 
         // Features:
         // - Shooting
+        // - Sword Slash/Charge
         #region Attacks
         // For shooting and aiming the bullet attack.
-        if (Input.GetButtonDown("FireBullet")) FireBullet();
+        if (Input.GetButtonDown("Fire") && aiming)
+            FireBullet();
+        else if (aiming)
+        { 
+            //Do nothing.
+        }
+        else if (Input.GetButtonDown("Fire"))
+        {
+            BeginSwordSlash();
+        }
+        else if (Input.GetButtonUp("Fire") && chargingSword)
+        {
+            EndSwordSlash();
+        }
+        if (!Input.GetButton("Fire")) chargingSword = false;
         #endregion
 
         // Prob have to redo this when I add animations.
@@ -129,10 +159,29 @@ public class PlayerController : MonoBehaviour {
             transform.localScale = new Vector3(1f, 1f, 1f);
         else if (GetComponent<Rigidbody2D>().velocity.x < 0)
             transform.localScale = new Vector3(-1f, 1f, 1f);
+
+        // Chooses a SwordCharge particle generator to show.
+        if(chargingSword)
+        {
+            int stage = 0;
+            if (Time.time > swordChargeStartTime + stageTwoSwordChargeTime) stage = 2;
+            else if (Time.time > swordChargeStartTime + stageOneSwordChargeTime) stage = 1;
+
+            swordChargeStageZeroParticles.SetActive(stage == 0);
+            swordChargeStageOneParticles.SetActive(stage == 1);
+            swordChargeStageTwoParticles.SetActive(stage == 2);
+        }
+        else
+        {
+            swordChargeStageZeroParticles.SetActive(false);
+            swordChargeStageOneParticles.SetActive(false);
+            swordChargeStageTwoParticles.SetActive(false);
+        }
         #endregion
 
         #region UI
 
+        // Handle Display Text.
         if (ui.AirDashNum != airDashesLeft) ui.UpdateDashText(airDashesLeft);
         if (ui.AirJumpNum != airJumpsLeft) ui.UpdateJumpText(airJumpsLeft);
 
@@ -216,7 +265,6 @@ public class PlayerController : MonoBehaviour {
 
     // Stores the shooting functions.
     #region Attacks
-
     void FireBullet()
     {
         if (shootingCooldownTime > Time.time) return;
@@ -227,17 +275,40 @@ public class PlayerController : MonoBehaviour {
             (this.transform.position.x, this.transform.position.y, this.transform.position.z),
             this.transform.rotation) as GameObject;
         Physics2D.IgnoreCollision(projectile.GetComponent<Collider2D>(), this.GetComponent<Collider2D>());
-
+        /*
         if (!aiming)
             projectile.GetComponent<Bullet>().Fire(bulletSpeed * transform.localScale.x);
             // The transform.localScale.x makes bullet travel backwards if facing backwards.
-        else
+        else*/
             projectile.GetComponent<Bullet>().Fire((Vector2)projectile.transform.position, 
                 (Vector2)aimerDirectionPoint.transform.position, bulletSpeed);
     }
     public void ResetShootingCooldown()
     {
         shootingCooldownTime = Time.time;
+    }
+    
+    void BeginSwordSlash()
+    {
+        swordChargeStartTime = Time.time;
+        chargingSword = true;
+    }
+   
+    void EndSwordSlash()
+    {
+        int stage = 0;
+
+        if (Time.time > swordChargeStartTime + stageTwoSwordChargeTime) stage = 2;
+        else if (Time.time > swordChargeStartTime + stageOneSwordChargeTime) stage = 1;
+
+        SummonSwordSlash(stage);
+
+        chargingSword = false;
+    }
+
+    void SummonSwordSlash(int slashStage = 0)
+    {
+        Debug.Log("Sword Slash Stage" + slashStage);
     }
     #endregion
 }
